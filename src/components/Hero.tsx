@@ -32,50 +32,58 @@ const Hero = forwardRef<HeroRef, HeroProps>(({ onReady, startAutoScroll = false 
   const autoScrollDurationRef = useRef(150);
   const autoScrollTargetRef = useRef(0);
   const autoScrollStartPosRef = useRef(0);
+  const hasTriggeredAutoScrollRef = useRef(false);
 
   useImperativeHandle(ref, () => ({
     isReady: isVideoFullyLoaded
   }), [isVideoFullyLoaded]);
 
+  // Trigger auto-scroll when user starts scrolling down
   useEffect(() => {
-    if (startAutoScroll && !isAutoScrolling) {
-      // Start immediately when loading finishes
-      const container = containerRef.current;
-      if (!container) {
-        console.log("[v0] No container found for auto-scroll");
-        return;
+    if (!isVideoFullyLoaded || hasTriggeredAutoScrollRef.current) return;
+    
+    const triggerAutoScroll = () => {
+      if (hasTriggeredAutoScrollRef.current || isAutoScrolling) return;
+      
+      const scrollY = window.scrollY || window.pageYOffset;
+      
+      // Trigger when user scrolls down at least 10px
+      if (scrollY > 10) {
+        hasTriggeredAutoScrollRef.current = true;
+        
+        const container = containerRef.current;
+        if (!container) return;
+        
+        // Calculate target scroll position (end of hero section)
+        const containerHeight = container.offsetHeight;
+        const viewportHeight = window.innerHeight;
+        const containerTop = container.offsetTop;
+        autoScrollTargetRef.current = containerTop + containerHeight - viewportHeight;
+        
+        // If user prefers reduced motion, skip animation and jump to end
+        if (prefersReducedMotion) {
+          window.scrollTo(0, autoScrollTargetRef.current);
+          return;
+        }
+        
+        // Very fast duration - 150ms
+        autoScrollDurationRef.current = 150;
+        
+        // Store current scroll position as start (never scroll up)
+        autoScrollStartPosRef.current = scrollY;
+        
+        // Reset start time so it gets set fresh in the animation loop
+        autoScrollStartTimeRef.current = null;
+        setIsAutoScrolling(true);
       }
-      
-      // Calculate target scroll position (end of hero section)
-      const containerHeight = container.offsetHeight;
-      const viewportHeight = window.innerHeight;
-      const containerTop = container.offsetTop;
-      autoScrollTargetRef.current = containerTop + containerHeight - viewportHeight;
-      
-      console.log("[v0] Auto-scroll starting", {
-        containerHeight,
-        viewportHeight,
-        containerTop,
-        target: autoScrollTargetRef.current
-      });
-      
-      // If user prefers reduced motion, skip animation and jump to end
-      if (prefersReducedMotion) {
-        window.scrollTo(0, autoScrollTargetRef.current);
-        return;
-      }
-      
-      // Very fast duration - 150ms (10x faster than before)
-      autoScrollDurationRef.current = 150;
-      
-      // Store current scroll position as start (never scroll up)
-      autoScrollStartPosRef.current = window.scrollY || 0;
-      
-      // Reset start time so it gets set fresh in the animation loop
-      autoScrollStartTimeRef.current = null;
-      setIsAutoScrolling(true);
-    }
-  }, [startAutoScroll, isAutoScrolling, prefersReducedMotion]);
+    };
+    
+    window.addEventListener('scroll', triggerAutoScroll, { passive: true });
+    
+    return () => {
+      window.removeEventListener('scroll', triggerAutoScroll);
+    };
+  }, [isVideoFullyLoaded, isAutoScrolling, prefersReducedMotion]);
 
   useEffect(() => {
     const video = videoRef.current;
@@ -259,19 +267,14 @@ const Hero = forwardRef<HeroRef, HeroProps>(({ onReady, startAutoScroll = false 
   useEffect(() => {
     if (!isAutoScrolling) return;
     
-    console.log("[v0] Auto-scroll animation effect triggered");
-    
     const startScroll = autoScrollStartPosRef.current;
     const targetScroll = autoScrollTargetRef.current;
     const scrollDistance = targetScroll - startScroll;
     const duration = autoScrollDurationRef.current;
     let animationFrame: number;
     
-    console.log("[v0] Animation params", { startScroll, targetScroll, scrollDistance, duration });
-    
     // If already at or past target, don't animate
     if (scrollDistance <= 0) {
-      console.log("[v0] No scroll distance, skipping animation");
       setIsAutoScrolling(false);
       return;
     }
@@ -294,7 +297,6 @@ const Hero = forwardRef<HeroRef, HeroProps>(({ onReady, startAutoScroll = false 
         autoScrollRafRef.current = animationFrame;
       } else {
         // Ensure we're exactly at the target position
-        console.log("[v0] Animation complete, final scroll:", targetScroll);
         window.scrollTo(0, targetScroll);
         setIsAutoScrolling(false);
         autoScrollStartTimeRef.current = null;
