@@ -1,0 +1,391 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+html,
+body {
+  min-height: 100%;
+}
+
+html {
+  scroll-behavior: smooth;
+  overscroll-behavior: none;
+  -webkit-overflow-scrolling: touch;
+}
+
+body {
+  overscroll-behavior-y: none;
+  background-color: #000;
+}
+
+#root {
+  min-height: 100vh;
+  position: relative;
+}
+
+section {
+  contain: layout style;
+  isolation: isolate;
+}
+
+.safari-desktop #root {
+  z-index: 1;
+}
+
+.safari-desktop section {
+  contain: style;
+  isolation: auto;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  html {
+    scroll-behavior: auto;
+  }
+
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+}
+
+@layer base {
+  @property --pos-x {
+    syntax: '<percentage>';
+    initial-value: 11.14%;
+    inherits: false;
+  }
+
+  @property --pos-y {
+    syntax: '<percentage>';
+    initial-value: 140%;
+    inherits: false;
+  }
+
+  @property --spread-x {
+    syntax: '<percentage>';
+    initial-value: 150%;
+    inherits: false;
+  }
+
+  @property --spread-y {
+    syntax: '<percentage>';
+    initial-value: 180.06%;
+    inherits: false;
+  }
+
+  @property --color-1 {
+    syntax: '<color>';
+    initial-value: #b8941f;
+    inherits: false;
+  }
+
+  @property --color-2 {
+    syntax: '<color>';
+    initial-value: #d4af37;
+    inherits: false;
+  }
+
+  @property --color-3 {
+    syntax: '<color>';
+    initial-value: #eab536;
+    inherits: false;
+  }
+
+  @property --color-4 {
+    syntax: '<color>';
+    initial-value: #26804b;
+    inherits: false;
+  }
+
+  @property --color-5 {
+    syntax: '<color>';
+    initial-value: #000;
+    inherits: false;
+  }
+
+  @property --border-angle {
+    syntax: '<angle>';
+    initial-value: 20deg;
+    inherits: true;
+  }
+
+  @property --border-color-1 {
+    syntax: '<color>';
+    initial-value: hsla(45, 75%, 60%, 0.2);
+    inherits: true;
+  }
+
+  @property --border-color-2 {
+    syntax: '<color>';
+    initial-value: hsla(45, 75%, 40%, 0.75);
+    inherits: true;
+  }
+
+  @property --stop-1 {
+    syntax: '<percentage>';
+    initial-value: 37.35%;
+    inherits: false;
+  }
+
+  @property --stop-2 {
+    syntax: '<percentage>';
+    initial-value: 61.36%;
+    inherits: false;
+  }
+
+  @property --stop-3 {
+    syntax: '<percentage>';
+    initial-value: 78.42%;
+    inherits: false;
+  }
+
+  @property --stop-4 {
+    syntax: '<percentage>';
+    initial-value: 89.52%;
+    inherits: false;
+  }
+
+  @property --stop-5 {
+    syntax: '<percentage>';
+    initial-value: 100%;
+    inherits: false;
+  }
+}
+
+@layer components {
+  .gradient-button {
+    @apply relative appearance-none cursor-pointer;
+    background: radial-gradient(
+      var(--spread-x) var(--spread-y) at var(--pos-x) var(--pos-y),
+      var(--color-1) var(--stop-1),
+      var(--color-2) var(--stop-2),
+      var(--color-3) var(--stop-3),
+      var(--color-4) var(--stop-4),
+      var(--color-5) var(--stop-5)
+    );
+    transition:
+      --pos-x 0.5s,
+      --pos-y 0.5s,
+      --spread-x 0.5s,
+      --spread-y 0.5s,
+      --color-1 0.5s,
+      --color-2 0.5s,
+      --color-3 0.5s,
+      --color-4 0.5s,
+      --color-5 0.5s,
+      --border-angle 0.5s,
+      --border-color-1 0.5s,
+      --border-color-2 0.5s,
+      --stop-1 0.5s,
+      --stop-2 0.5s,
+      --stop-3 0.5s,
+      --stop-4 0.5s,
+      --stop-5 0.5s;
+  }
+
+  .gradient-button::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    border-radius: inherit;
+    padding: 1px;
+    background: linear-gradient(
+      var(--border-angle),
+      var(--border-color-1),
+      var(--border-color-2)
+    );
+    -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+    -webkit-mask-composite: xor;
+    mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+    mask-composite: exclude;
+    pointer-events: none;
+  }
+
+  .gradient-button:hover {
+    --pos-x: 0%;
+    --pos-y: 91.51%;
+    --spread-x: 120.24%;
+    --spread-y: 103.18%;
+    --color-1: #339b5e;
+    --color-2: #57b87f;
+    --color-3: #eab536;
+    --color-4: #1a3d2e;
+    --color-5: #000;
+    --border-angle: 190deg;
+    --border-color-1: hsla(45, 78%, 90%, 0.1);
+    --border-color-2: hsla(45, 75%, 90%, 0.6);
+    --stop-1: 0%;
+    --stop-2: 8.8%;
+    --stop-3: 21.44%;
+    --stop-4: 71.34%;
+    --stop-5: 85.76%;
+  }
+
+  .gradient-button-variant {
+    --color-1: #1a3d2e;
+    --color-2: #26804b;
+    --color-3: #57b87f;
+    --color-4: #f6e292;
+    --border-angle: 200deg;
+    --border-color-1: hsla(140, 75%, 90%, 0.6);
+    --border-color-2: hsla(140, 50%, 90%, 0.15);
+  }
+
+  .gradient-button-variant:hover {
+    --pos-x: 0%;
+    --pos-y: 95.51%;
+    --spread-x: 110.24%;
+    --spread-y: 110.2%;
+    --color-1: #1a3d2e;
+    --color-2: #f6e292;
+    --color-3: #57b87f;
+    --color-4: #26804b;
+    --color-5: #000;
+    --stop-1: 0%;
+    --stop-2: 10%;
+    --stop-3: 35.44%;
+    --stop-4: 71.34%;
+    --stop-5: 90.76%;
+    --border-angle: 210deg;
+    --border-color-1: hsla(140, 75%, 90%, 0.2);
+    --border-color-2: hsla(140, 50%, 90%, 0.75);
+  }
+
+  @supports not (background: radial-gradient(100% 100% at var(--pos-x) var(--pos-y), red 0%, blue 100%)) {
+    .gradient-button {
+      background: radial-gradient(
+        150% 180% at 11% 140%,
+        #b8941f 37%,
+        #d4af37 61%,
+        #eab536 78%,
+        #26804b 90%,
+        #000 100%
+      );
+      transition: background 0.5s ease;
+    }
+
+    .gradient-button:hover {
+      background: radial-gradient(
+        120% 103% at 0% 92%,
+        #339b5e 0%,
+        #57b87f 9%,
+        #eab536 21%,
+        #1a3d2e 71%,
+        #000 86%
+      );
+    }
+
+    .gradient-button::before {
+      background: linear-gradient(20deg, hsla(45, 75%, 60%, 0.2), hsla(45, 75%, 40%, 0.75));
+    }
+
+    .gradient-button-variant {
+      background: radial-gradient(
+        150% 180% at 11% 140%,
+        #1a3d2e 37%,
+        #26804b 61%,
+        #57b87f 78%,
+        #f6e292 90%,
+        #000 100%
+      );
+    }
+
+    .gradient-button-variant:hover {
+      background: radial-gradient(
+        110% 110% at 0% 96%,
+        #1a3d2e 0%,
+        #f6e292 10%,
+        #57b87f 35%,
+        #26804b 71%,
+        #000 91%
+      );
+    }
+  }
+
+  .gradient-text {
+    color: #d4af37;
+    background: linear-gradient(
+      135deg,
+      #d4af37 0%,
+      #eab536 25%,
+      #f0ce5f 50%,
+      #26804b 75%,
+      #339b5e 100%
+    );
+    -webkit-background-clip: text;
+    background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-size: 200% 200%;
+    animation: gradient-shift 3s ease-in-out infinite;
+  }
+
+  @supports not ((-webkit-background-clip: text) and (-webkit-text-fill-color: transparent)) {
+    .gradient-text {
+      background: none;
+      color: #d4af37;
+    }
+  }
+
+  @keyframes gradient-shift {
+    0%, 100% {
+      background-position: 0% 50%;
+    }
+    50% {
+      background-position: 100% 50%;
+    }
+  }
+
+  .king-gradient-stroke {
+    color: #d4af37;
+    background: linear-gradient(
+      135deg,
+      #d4af37 0%,
+      #eab536 25%,
+      #f0ce5f 50%,
+      #26804b 75%,
+      #339b5e 100%
+    );
+    -webkit-background-clip: text;
+    background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-size: 200% 200%;
+    animation: gradient-shift 3s ease-in-out infinite;
+  }
+
+  @supports not ((-webkit-background-clip: text) and (-webkit-text-fill-color: transparent)) {
+    .king-gradient-stroke {
+      background: none;
+      color: #d4af37;
+    }
+  }
+
+  .king-gradient-stroke svg {
+    stroke: url(#king-gradient);
+  }
+
+  .loading-progress-bar {
+    background: linear-gradient(
+      90deg,
+      #b8941f 0%,
+      #d4af37 30%,
+      #eab536 50%,
+      #f0ce5f 70%,
+      #26804b 100%
+    );
+    background-size: 200% 100%;
+    animation: shimmer 2s linear infinite;
+  }
+
+  @keyframes shimmer {
+    0% {
+      background-position: 200% 0;
+    }
+    100% {
+      background-position: -200% 0;
+    }
+  }
+}
