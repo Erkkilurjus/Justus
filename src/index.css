@@ -11,6 +11,18 @@ html {
   scroll-behavior: smooth;
   overscroll-behavior: none;
   -webkit-overflow-scrolling: touch;
+  touch-action: manipulation;
+}
+
+/* Mobile touch optimizations */
+@media (pointer: coarse) {
+  * {
+    -webkit-tap-highlight-color: transparent;
+  }
+  
+  button, a, [role="button"] {
+    touch-action: manipulation;
+  }
 }
 
 body {

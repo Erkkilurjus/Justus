@@ -13,10 +13,9 @@ const Hero = () => {
   const currentTimeRef = useRef(0);
   const targetTimeRef = useRef(0);
   const rafRef = useRef<number | null>(null);
-  const lastScrollY = useRef(0);
   const isMobileRef = useRef(false);
-  const isAndroidRef = useRef(false);
   const hasReachedEndRef = useRef(false);
+  const scrollThrottleRef = useRef(false);
 
   useEffect(() => {
     const video = videoRef.current;
@@ -38,13 +37,9 @@ const Hero = () => {
   }, [scrollProgress, videoDuration]);
 
   useEffect(() => {
-    const checkMobile = () => {
-      isMobileRef.current = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent) ||
-        ('ontouchstart' in window) ||
-        (navigator.maxTouchPoints > 0);
-      isAndroidRef.current = /Android/i.test(navigator.userAgent);
-    };
-    checkMobile();
+    isMobileRef.current = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent) ||
+      ('ontouchstart' in window) ||
+      (navigator.maxTouchPoints > 0);
   }, []);
 
   useEffect(() => {
@@ -194,7 +189,8 @@ const Hero = () => {
     const video = videoRef.current;
     if (!video) return;
 
-    const lerpFactor = prefersReducedMotion ? 1 : (isAndroidRef.current ? 0.5 : (isMobileRef.current ? 0.25 : 0.35));
+    // Faster lerp on mobile for more responsive feel
+    const lerpFactor = prefersReducedMotion ? 1 : (isMobileRef.current ? 0.4 : 0.35);
     let isUpdating = true;
 
     const updateVideoTime = () => {
@@ -251,48 +247,25 @@ const Hero = () => {
       }
     };
 
+    // Throttled scroll handler for better mobile performance
     const handleScroll = () => {
-      lastScrollY.current = window.pageYOffset || document.documentElement.scrollTop;
-      updateScrollProgress();
-    };
-
-    let touchStartY = 0;
-    let isTouching = false;
-
-    const handleTouchStart = (e: TouchEvent) => {
-      touchStartY = e.touches[0].clientY;
-      isTouching = true;
-    };
-
-    const handleTouchMove = () => {
-      if (!isTouching) return;
-      updateScrollProgress();
-    };
-
-    const handleTouchEnd = () => {
-      isTouching = false;
-      updateScrollProgress();
+      if (scrollThrottleRef.current) return;
+      scrollThrottleRef.current = true;
+      
+      requestAnimationFrame(() => {
+        updateScrollProgress();
+        scrollThrottleRef.current = false;
+      });
     };
 
     window.addEventListener('scroll', handleScroll, { passive: true });
-    window.addEventListener('touchstart', handleTouchStart, { passive: true });
-    window.addEventListener('touchmove', handleTouchMove, { passive: true });
-    window.addEventListener('touchend', handleTouchEnd, { passive: true });
 
     handleScroll();
     rafRef.current = requestAnimationFrame(updateVideoTime);
 
-    const scrollInterval = setInterval(() => {
-      updateScrollProgress();
-    }, 16);
-
     return () => {
       isUpdating = false;
       window.removeEventListener('scroll', handleScroll);
-      window.removeEventListener('touchstart', handleTouchStart);
-      window.removeEventListener('touchmove', handleTouchMove);
-      window.removeEventListener('touchend', handleTouchEnd);
-      clearInterval(scrollInterval);
       if (rafRef.current) {
         cancelAnimationFrame(rafRef.current);
       }
@@ -307,28 +280,19 @@ const Hero = () => {
         ref={videoRef}
         muted
         playsInline
-        preload={isMobileRef.current ? "metadata" : "auto"}
+        preload="auto"
         className="w-full h-full object-cover"
         style={{
-          willChange: 'transform',
-          transform: 'translate3d(0,0,0)',
-          WebkitTransform: 'translate3d(0,0,0)',
+          willChange: 'contents',
+          transform: 'translateZ(0)',
           backfaceVisibility: 'hidden',
-          WebkitBackfaceVisibility: 'hidden',
-          WebkitTransformStyle: 'preserve-3d',
-          transformStyle: 'preserve-3d',
         }}
         {...{ 'webkit-playsinline': 'true' } as React.VideoHTMLAttributes<HTMLVideoElement>}
       >
         <source src="/hero-keyframed.mp4" type="video/mp4" />
       </video>
       <div
-        className="absolute inset-0 bg-gradient-to-b from-black/40 via-transparent to-black/60"
-        style={{
-          willChange: 'opacity',
-          WebkitTransformStyle: 'preserve-3d',
-          transformStyle: 'preserve-3d',
-        }}
+        className="absolute inset-0 bg-gradient-to-b from-black/40 via-transparent to-black/60 pointer-events-none"
       />
     </>
   );
@@ -338,13 +302,8 @@ const Hero = () => {
       className="fixed inset-0 w-screen h-screen overflow-hidden"
       style={{
         zIndex: 0,
-        opacity: 1,
-        visibility: 'visible',
-        willChange: 'transform',
         transform: 'translateZ(0)',
-        WebkitTransform: 'translateZ(0)',
-        WebkitTransformStyle: 'preserve-3d',
-        transformStyle: 'preserve-3d',
+        contain: 'strict',
       }}
     >
       {videoElement}
