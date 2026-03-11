@@ -24,12 +24,14 @@ function App() {
     if (!isComplete) {
       document.body.style.overflow = 'hidden';
       document.documentElement.style.overflow = 'hidden';
+      // Ensure we start at top during loading
+      window.scrollTo(0, 0);
     } else {
       const timer = setTimeout(() => {
         document.body.style.overflow = '';
         document.documentElement.style.overflow = '';
         setShowContent(true);
-        window.scrollTo(0, 0);
+        // Don't reset scroll here - let the Hero component handle auto-scroll
       }, 800);
       return () => clearTimeout(timer);
     }
