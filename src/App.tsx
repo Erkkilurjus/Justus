@@ -48,7 +48,7 @@ function App() {
           visibility: showContent ? 'visible' : 'hidden',
         }}
       >
-        <Hero onReady={handleHeroReady} />
+        <Hero onReady={handleHeroReady} startAutoScroll={showContent} />
         <div className="relative z-[1]">
           <StarrySection />
         </div>

@@ -8,9 +8,10 @@ export interface HeroRef {
 
 interface HeroProps {
   onReady?: () => void;
+  startAutoScroll?: boolean;
 }
 
-const Hero = forwardRef<HeroRef, HeroProps>(({ onReady }, ref) => {
+const Hero = forwardRef<HeroRef, HeroProps>(({ onReady, startAutoScroll = false }, ref) => {
   const containerRef = useRef<HTMLDivElement>(null);
   const videoRef = useRef<HTMLVideoElement>(null);
   const [videoDuration, setVideoDuration] = useState(0);
@@ -37,8 +38,8 @@ const Hero = forwardRef<HeroRef, HeroProps>(({ onReady }, ref) => {
   }), [isVideoFullyLoaded]);
 
   useEffect(() => {
-    if (isVideoFullyLoaded && !isAutoScrolling) {
-      // Start immediately
+    if (startAutoScroll && !isAutoScrolling) {
+      // Start immediately when loading finishes
       const container = containerRef.current;
       if (!container) return;
       
@@ -64,7 +65,7 @@ const Hero = forwardRef<HeroRef, HeroProps>(({ onReady }, ref) => {
       autoScrollStartTimeRef.current = null;
       setIsAutoScrolling(true);
     }
-  }, [isVideoFullyLoaded, isAutoScrolling, prefersReducedMotion]);
+  }, [startAutoScroll, isAutoScrolling, prefersReducedMotion]);
 
   useEffect(() => {
     const video = videoRef.current;
