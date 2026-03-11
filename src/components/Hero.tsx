@@ -1,16 +1,8 @@
-import React, { useRef, useEffect, useState, useCallback, forwardRef, useImperativeHandle } from 'react';
+import { useRef, useEffect, useState, useCallback } from 'react';
 import { createPortal } from 'react-dom';
 import { isSafariDesktop } from '../lib/utils';
 
-export interface HeroRef {
-  isReady: boolean;
-}
-
-interface HeroProps {
-  onReady?: () => void;
-}
-
-const Hero = forwardRef<HeroRef, HeroProps>(({ onReady }, ref) => {
+const Hero = () => {
   const containerRef = useRef<HTMLDivElement>(null);
   const videoRef = useRef<HTMLVideoElement>(null);
   const [videoDuration, setVideoDuration] = useState(0);
@@ -25,10 +17,6 @@ const Hero = forwardRef<HeroRef, HeroProps>(({ onReady }, ref) => {
   const isMobileRef = useRef(false);
   const isAndroidRef = useRef(false);
   const hasReachedEndRef = useRef(false);
-
-  useImperativeHandle(ref, () => ({
-    isReady: isVideoFullyLoaded
-  }), [isVideoFullyLoaded]);
 
   useEffect(() => {
     const video = videoRef.current;
@@ -109,7 +97,6 @@ const Hero = forwardRef<HeroRef, HeroProps>(({ onReady }, ref) => {
             loadTimeout = null;
           }
           setIsVideoFullyLoaded(true);
-          onReady?.();
         }
       }
     };
@@ -122,7 +109,6 @@ const Hero = forwardRef<HeroRef, HeroProps>(({ onReady }, ref) => {
           checkInterval = null;
         }
         setIsVideoFullyLoaded(true);
-        onReady?.();
       } else {
         checkVideoReady();
       }
@@ -165,7 +151,6 @@ const Hero = forwardRef<HeroRef, HeroProps>(({ onReady }, ref) => {
           checkInterval = null;
         }
         setIsVideoFullyLoaded(true);
-        onReady?.();
       }
     }, isMobileRef.current ? 5000 : 8000);
 
@@ -183,7 +168,7 @@ const Hero = forwardRef<HeroRef, HeroProps>(({ onReady }, ref) => {
         clearTimeout(loadTimeout);
       }
     };
-  }, [onReady, isVideoFullyLoaded]);
+  }, [isVideoFullyLoaded]);
 
   const calculateScrollProgress = useCallback(() => {
     const container = containerRef.current;
@@ -376,8 +361,6 @@ const Hero = forwardRef<HeroRef, HeroProps>(({ onReady }, ref) => {
       />
     </>
   );
-});
-
-Hero.displayName = 'Hero';
+};
 
 export default Hero;
