@@ -38,52 +38,51 @@ const Hero = forwardRef<HeroRef, HeroProps>(({ onReady, startAutoScroll = false 
     isReady: isVideoFullyLoaded
   }), [isVideoFullyLoaded]);
 
-  // Trigger auto-scroll when user starts scrolling down
+  // Trigger auto-scroll automatically when startAutoScroll becomes true
   useEffect(() => {
-    if (!isVideoFullyLoaded || hasTriggeredAutoScrollRef.current) return;
+    if (!startAutoScroll || !isVideoFullyLoaded || hasTriggeredAutoScrollRef.current) return;
     
-    const triggerAutoScroll = () => {
+    // Small delay to ensure DOM is ready and scroll position is reset
+    const startTimer = setTimeout(() => {
       if (hasTriggeredAutoScrollRef.current || isAutoScrolling) return;
       
-      const scrollY = window.scrollY || window.pageYOffset;
+      hasTriggeredAutoScrollRef.current = true;
       
-      // Trigger when user scrolls down at least 10px
-      if (scrollY > 10) {
-        hasTriggeredAutoScrollRef.current = true;
-        
-        const container = containerRef.current;
-        if (!container) return;
-        
-        // Calculate target scroll position (end of hero section)
-        const containerHeight = container.offsetHeight;
-        const viewportHeight = window.innerHeight;
-        const containerTop = container.offsetTop;
-        autoScrollTargetRef.current = containerTop + containerHeight - viewportHeight;
-        
-        // If user prefers reduced motion, skip animation and jump to end
-        if (prefersReducedMotion) {
-          window.scrollTo(0, autoScrollTargetRef.current);
-          return;
-        }
-        
-        // Very fast duration - 150ms
-        autoScrollDurationRef.current = 150;
-        
-        // Store current scroll position as start (never scroll up)
-        autoScrollStartPosRef.current = scrollY;
-        
-        // Reset start time so it gets set fresh in the animation loop
-        autoScrollStartTimeRef.current = null;
-        setIsAutoScrolling(true);
+      const container = containerRef.current;
+      if (!container) return;
+      
+      // Ensure we start from the top
+      window.scrollTo(0, 0);
+      
+      // Calculate target scroll position (end of hero section)
+      const containerHeight = container.offsetHeight;
+      const viewportHeight = window.innerHeight;
+      const containerTop = container.offsetTop;
+      autoScrollTargetRef.current = containerTop + containerHeight - viewportHeight;
+      
+      // If user prefers reduced motion, skip animation and jump to end
+      if (prefersReducedMotion) {
+        window.scrollTo(0, autoScrollTargetRef.current);
+        return;
       }
-    };
-    
-    window.addEventListener('scroll', triggerAutoScroll, { passive: true });
+      
+      // Smooth animation duration - 2000ms for a pleasant experience
+      autoScrollDurationRef.current = 2000;
+      
+      // Start from top
+      autoScrollStartPosRef.current = 0;
+      
+      // Reset start time so it gets set fresh in the animation loop
+      autoScrollStartTimeRef.current = null;
+      
+      // Start the auto-scroll animation
+      setIsAutoScrolling(true);
+    }, 100);
     
     return () => {
-      window.removeEventListener('scroll', triggerAutoScroll);
+      clearTimeout(startTimer);
     };
-  }, [isVideoFullyLoaded, isAutoScrolling, prefersReducedMotion]);
+  }, [startAutoScroll, isVideoFullyLoaded, isAutoScrolling, prefersReducedMotion]);
 
   useEffect(() => {
     const video = videoRef.current;
@@ -258,10 +257,10 @@ const Hero = forwardRef<HeroRef, HeroProps>(({ onReady, startAutoScroll = false 
     return Math.max(0, Math.min(1, progress));
   }, []);
 
-  // Easing function for smooth scroll animation (ease-in-out quad)
-  // This creates a natural acceleration then deceleration
-  const easeInOutQuad = (t: number): number => {
-    return t < 0.5 ? 2 * t * t : 1 - Math.pow(-2 * t + 2, 2) / 2;
+  // Easing function for smooth scroll animation (ease-out cubic)
+  // This creates a natural deceleration that feels smooth on all devices
+  const easeOutCubic = (t: number): number => {
+    return 1 - Math.pow(1 - t, 3);
   };
 
   useEffect(() => {
@@ -272,6 +271,7 @@ const Hero = forwardRef<HeroRef, HeroProps>(({ onReady, startAutoScroll = false 
     const scrollDistance = targetScroll - startScroll;
     const duration = autoScrollDurationRef.current;
     let animationFrame: number;
+    let isAnimating = true;
     
     // If already at or past target, don't animate
     if (scrollDistance <= 0) {
@@ -280,33 +280,54 @@ const Hero = forwardRef<HeroRef, HeroProps>(({ onReady, startAutoScroll = false 
     }
     
     const animate = (currentTime: number) => {
+      if (!isAnimating) return;
+      
       if (!autoScrollStartTimeRef.current) {
         autoScrollStartTimeRef.current = currentTime;
       }
       
       const elapsed = currentTime - autoScrollStartTimeRef.current;
       const rawProgress = Math.min(elapsed / duration, 1);
-      const easedProgress = easeInOutQuad(rawProgress);
+      const easedProgress = easeOutCubic(rawProgress);
       
       // Scroll from start position to target (only down, never up)
       const newScrollY = startScroll + (scrollDistance * easedProgress);
-      window.scrollTo(0, newScrollY);
       
-      if (rawProgress < 1) {
+      // Use smooth scroll behavior for better cross-device compatibility
+      try {
+        window.scrollTo({
+          top: newScrollY,
+          behavior: 'instant'
+        });
+      } catch {
+        // Fallback for older browsers
+        window.scrollTo(0, newScrollY);
+      }
+      
+      if (rawProgress < 1 && isAnimating) {
         animationFrame = requestAnimationFrame(animate);
         autoScrollRafRef.current = animationFrame;
-      } else {
+      } else if (isAnimating) {
         // Ensure we're exactly at the target position
-        window.scrollTo(0, targetScroll);
+        try {
+          window.scrollTo({
+            top: targetScroll,
+            behavior: 'instant'
+          });
+        } catch {
+          window.scrollTo(0, targetScroll);
+        }
         setIsAutoScrolling(false);
         autoScrollStartTimeRef.current = null;
       }
     };
     
+    // Start animation on next frame to ensure DOM is ready
     animationFrame = requestAnimationFrame(animate);
     autoScrollRafRef.current = animationFrame;
     
     return () => {
+      isAnimating = false;
       if (autoScrollRafRef.current) {
         cancelAnimationFrame(autoScrollRafRef.current);
       }
