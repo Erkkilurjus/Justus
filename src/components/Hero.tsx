@@ -18,7 +18,6 @@ const Hero = forwardRef<HeroRef, HeroProps>(({ onReady }, ref) => {
   const [isVideoFullyLoaded, setIsVideoFullyLoaded] = useState(false);
   const [prefersReducedMotion, setPrefersReducedMotion] = useState(false);
   const [scrollProgress, setScrollProgress] = useState(0);
-  const [isAutoScrolling, setIsAutoScrolling] = useState(false);
   const currentTimeRef = useRef(0);
   const targetTimeRef = useRef(0);
   const rafRef = useRef<number | null>(null);
@@ -26,21 +25,10 @@ const Hero = forwardRef<HeroRef, HeroProps>(({ onReady }, ref) => {
   const isMobileRef = useRef(false);
   const isAndroidRef = useRef(false);
   const hasReachedEndRef = useRef(false);
-  const autoScrollRafRef = useRef<number | null>(null);
-  const autoScrollStartTimeRef = useRef<number | null>(null);
-  const autoScrollDurationRef = useRef(8000);
-  const autoScrollCallbackRef = useRef<() => void>(() => {});
 
   useImperativeHandle(ref, () => ({
     isReady: isVideoFullyLoaded
   }), [isVideoFullyLoaded]);
-
-  useEffect(() => {
-    if (isVideoFullyLoaded && !isAutoScrolling) {
-      setIsAutoScrolling(true);
-      autoScrollStartTimeRef.current = Date.now();
-    }
-  }, [isVideoFullyLoaded, isAutoScrolling]);
 
   useEffect(() => {
     const video = videoRef.current;
@@ -216,43 +204,6 @@ const Hero = forwardRef<HeroRef, HeroProps>(({ onReady }, ref) => {
   }, []);
 
   useEffect(() => {
-    autoScrollCallbackRef.current = () => {
-      if (!autoScrollStartTimeRef.current) return;
-
-      const elapsed = Date.now() - autoScrollStartTimeRef.current;
-      const progress = Math.min(elapsed / autoScrollDurationRef.current, 1);
-
-      const container = containerRef.current;
-      if (!container) return;
-
-      const containerHeight = container.offsetHeight;
-      const viewportHeight = window.innerHeight;
-      const scrollableDistance = containerHeight - viewportHeight;
-      const targetScroll = scrollableDistance * progress;
-
-      window.scrollTo(0, targetScroll);
-
-      if (progress < 1) {
-        autoScrollRafRef.current = requestAnimationFrame(autoScrollCallbackRef.current);
-      } else {
-        setIsAutoScrolling(false);
-        autoScrollStartTimeRef.current = null;
-      }
-    };
-  }, []);
-
-  useEffect(() => {
-    if (isAutoScrolling) {
-      autoScrollRafRef.current = requestAnimationFrame(autoScrollCallbackRef.current);
-      return () => {
-        if (autoScrollRafRef.current) {
-          cancelAnimationFrame(autoScrollRafRef.current);
-        }
-      };
-    }
-  }, [isAutoScrolling]);
-
-  useEffect(() => {
     if (!isVideoReady || videoDuration === 0 || !isVideoFullyLoaded) return;
 
     const video = videoRef.current;
@@ -316,7 +267,6 @@ const Hero = forwardRef<HeroRef, HeroProps>(({ onReady }, ref) => {
     };
 
     const handleScroll = () => {
-      if (isAutoScrolling) return;
       lastScrollY.current = window.pageYOffset || document.documentElement.scrollTop;
       updateScrollProgress();
     };
@@ -325,19 +275,11 @@ const Hero = forwardRef<HeroRef, HeroProps>(({ onReady }, ref) => {
     let isTouching = false;
 
     const handleTouchStart = (e: TouchEvent) => {
-      if (isAutoScrolling) {
-        e.preventDefault();
-        return;
-      }
       touchStartY = e.touches[0].clientY;
       isTouching = true;
     };
 
-    const handleTouchMove = (e: TouchEvent) => {
-      if (isAutoScrolling) {
-        e.preventDefault();
-        return;
-      }
+    const handleTouchMove = () => {
       if (!isTouching) return;
       updateScrollProgress();
     };
@@ -347,17 +289,10 @@ const Hero = forwardRef<HeroRef, HeroProps>(({ onReady }, ref) => {
       updateScrollProgress();
     };
 
-    const handleWheel = (e: WheelEvent) => {
-      if (isAutoScrolling) {
-        e.preventDefault();
-      }
-    };
-
     window.addEventListener('scroll', handleScroll, { passive: true });
-    window.addEventListener('touchstart', handleTouchStart, { passive: false });
-    window.addEventListener('touchmove', handleTouchMove, { passive: false });
+    window.addEventListener('touchstart', handleTouchStart, { passive: true });
+    window.addEventListener('touchmove', handleTouchMove, { passive: true });
     window.addEventListener('touchend', handleTouchEnd, { passive: true });
-    window.addEventListener('wheel', handleWheel, { passive: false });
 
     handleScroll();
     rafRef.current = requestAnimationFrame(updateVideoTime);
@@ -372,13 +307,12 @@ const Hero = forwardRef<HeroRef, HeroProps>(({ onReady }, ref) => {
       window.removeEventListener('touchstart', handleTouchStart);
       window.removeEventListener('touchmove', handleTouchMove);
       window.removeEventListener('touchend', handleTouchEnd);
-      window.removeEventListener('wheel', handleWheel);
       clearInterval(scrollInterval);
       if (rafRef.current) {
         cancelAnimationFrame(rafRef.current);
       }
     };
-  }, [isVideoReady, isVideoFullyLoaded, videoDuration, prefersReducedMotion, calculateScrollProgress, isAutoScrolling]);
+  }, [isVideoReady, isVideoFullyLoaded, videoDuration, prefersReducedMotion, calculateScrollProgress]);
 
   const safariDesktop = isSafariDesktop();
 
