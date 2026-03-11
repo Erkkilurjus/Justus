@@ -28,7 +28,7 @@ const Hero = forwardRef<HeroRef, HeroProps>(({ onReady }, ref) => {
   const hasReachedEndRef = useRef(false);
   const autoScrollRafRef = useRef<number | null>(null);
   const autoScrollStartTimeRef = useRef<number | null>(null);
-  const autoScrollDurationRef = useRef(6000);
+  const autoScrollDurationRef = useRef(3000);
   const autoScrollTargetRef = useRef(0);
 
   useImperativeHandle(ref, () => ({
@@ -58,7 +58,7 @@ const Hero = forwardRef<HeroRef, HeroProps>(({ onReady }, ref) => {
         }
         
         // Adjust duration based on device (faster on mobile for better UX)
-        autoScrollDurationRef.current = isMobileRef.current ? 4000 : 6000;
+        autoScrollDurationRef.current = isMobileRef.current ? 2500 : 3000;
         
         // Reset start time so it gets set fresh in the animation loop
         autoScrollStartTimeRef.current = null;
