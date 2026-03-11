@@ -28,8 +28,9 @@ const Hero = forwardRef<HeroRef, HeroProps>(({ onReady }, ref) => {
   const hasReachedEndRef = useRef(false);
   const autoScrollRafRef = useRef<number | null>(null);
   const autoScrollStartTimeRef = useRef<number | null>(null);
-  const autoScrollDurationRef = useRef(3000);
+  const autoScrollDurationRef = useRef(1500);
   const autoScrollTargetRef = useRef(0);
+  const autoScrollStartPosRef = useRef(0);
 
   useImperativeHandle(ref, () => ({
     isReady: isVideoFullyLoaded
@@ -37,35 +38,31 @@ const Hero = forwardRef<HeroRef, HeroProps>(({ onReady }, ref) => {
 
   useEffect(() => {
     if (isVideoFullyLoaded && !isAutoScrolling) {
-      // Small delay to ensure the DOM is fully ready
-      const startDelay = setTimeout(() => {
-        const container = containerRef.current;
-        if (!container) return;
-        
-        // Calculate target scroll position (end of hero section)
-        const containerHeight = container.offsetHeight;
-        const viewportHeight = window.innerHeight;
-        const containerTop = container.offsetTop;
-        autoScrollTargetRef.current = containerTop + containerHeight - viewportHeight;
-        
-        // Ensure we start from the top
-        window.scrollTo(0, 0);
-        
-        // If user prefers reduced motion, skip animation and jump to end
-        if (prefersReducedMotion) {
-          window.scrollTo(0, autoScrollTargetRef.current);
-          return;
-        }
-        
-        // Adjust duration based on device (faster on mobile for better UX)
-        autoScrollDurationRef.current = isMobileRef.current ? 2500 : 3000;
-        
-        // Reset start time so it gets set fresh in the animation loop
-        autoScrollStartTimeRef.current = null;
-        setIsAutoScrolling(true);
-      }, 100);
+      // Start immediately
+      const container = containerRef.current;
+      if (!container) return;
       
-      return () => clearTimeout(startDelay);
+      // Calculate target scroll position (end of hero section)
+      const containerHeight = container.offsetHeight;
+      const viewportHeight = window.innerHeight;
+      const containerTop = container.offsetTop;
+      autoScrollTargetRef.current = containerTop + containerHeight - viewportHeight;
+      
+      // If user prefers reduced motion, skip animation and jump to end
+      if (prefersReducedMotion) {
+        window.scrollTo(0, autoScrollTargetRef.current);
+        return;
+      }
+      
+      // Fast duration - 1.5 seconds
+      autoScrollDurationRef.current = 1500;
+      
+      // Store current scroll position as start (never scroll up)
+      autoScrollStartPosRef.current = window.scrollY || 0;
+      
+      // Reset start time so it gets set fresh in the animation loop
+      autoScrollStartTimeRef.current = null;
+      setIsAutoScrolling(true);
     }
   }, [isVideoFullyLoaded, isAutoScrolling, prefersReducedMotion]);
 
@@ -251,9 +248,17 @@ const Hero = forwardRef<HeroRef, HeroProps>(({ onReady }, ref) => {
   useEffect(() => {
     if (!isAutoScrolling) return;
     
+    const startScroll = autoScrollStartPosRef.current;
     const targetScroll = autoScrollTargetRef.current;
+    const scrollDistance = targetScroll - startScroll;
     const duration = autoScrollDurationRef.current;
     let animationFrame: number;
+    
+    // If already at or past target, don't animate
+    if (scrollDistance <= 0) {
+      setIsAutoScrolling(false);
+      return;
+    }
     
     const animate = (currentTime: number) => {
       if (!autoScrollStartTimeRef.current) {
@@ -264,8 +269,9 @@ const Hero = forwardRef<HeroRef, HeroProps>(({ onReady }, ref) => {
       const rawProgress = Math.min(elapsed / duration, 1);
       const easedProgress = easeInOutQuad(rawProgress);
       
-      const scrollY = easedProgress * targetScroll;
-      window.scrollTo(0, scrollY);
+      // Scroll from start position to target (only down, never up)
+      const newScrollY = startScroll + (scrollDistance * easedProgress);
+      window.scrollTo(0, newScrollY);
       
       if (rawProgress < 1) {
         animationFrame = requestAnimationFrame(animate);
