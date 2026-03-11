@@ -31,7 +31,6 @@ function App() {
         document.body.style.overflow = '';
         document.documentElement.style.overflow = '';
         setShowContent(true);
-        // Don't reset scroll here - let the Hero component handle auto-scroll
       }, 800);
       return () => clearTimeout(timer);
     }
@@ -48,7 +47,7 @@ function App() {
           visibility: showContent ? 'visible' : 'hidden',
         }}
       >
-        <Hero onReady={handleHeroReady} startAutoScroll={showContent} />
+        <Hero onReady={handleHeroReady} />
         <div className="relative z-[1]">
           <StarrySection />
         </div>
