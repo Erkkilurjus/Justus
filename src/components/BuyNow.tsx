@@ -5,13 +5,13 @@ const BuyNow: React.FC = () => {
   return (
     <section id="buy-now-section" className="py-20 bg-gradient-to-b from-black to-green-900 relative">
       {/* Parchment Background */}
-      <div 
+      <div
         className="absolute inset-0 opacity-5"
         style={{
           backgroundImage: `url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><defs><pattern id="vintage" patternUnits="userSpaceOnUse" width="40" height="40"><rect width="40" height="40" fill="%23d4af37"/><circle cx="10" cy="10" r="1" fill="%23b8941f" opacity="0.3"/><circle cx="30" cy="25" r="0.8" fill="%23b8941f" opacity="0.2"/></pattern></defs><rect width="100" height="100" fill="url(%23vintage)"/></svg>')`,
         }}
       />
-      
+
       <div className="container mx-auto px-4 relative z-10">
         <div className="max-w-4xl mx-auto">
           <div className="text-center mb-12">
@@ -38,10 +38,10 @@ const BuyNow: React.FC = () => {
                   <span className="text-gray-300">(127 reviews)</span>
                 </div>
                 <p className="text-gray-300 mb-6 leading-relaxed">
-                  Premium wooden components, detailed historical maps, comprehensive rulebook, 
+                  Premium wooden components, detailed historical maps, comprehensive rulebook,
                   and exclusive collector's packaging. Each copy individually numbered.
                 </p>
-                
+
                 <div className="space-y-3 mb-6">
                   <div className="flex items-center text-gray-300">
                     <Shield className="w-5 h-5 text-amber-400 mr-3" />
@@ -64,12 +64,15 @@ const BuyNow: React.FC = () => {
                   <div className="text-5xl font-serif text-amber-400 mb-2">$249</div>
                   <div className="text-gray-300">Limited time offer</div>
                 </div>
-                
-                <button className="w-full bg-gradient-to-r from-amber-400 to-yellow-500 text-green-900 px-8 py-4 rounded-lg font-semibold text-lg transition-all duration-300 hover:from-amber-500 hover:to-yellow-600 hover:shadow-lg hover:shadow-amber-500/25 transform hover:scale-105 mb-4">
+
+                <button
+                  onClick={() => window.open('https://www.amazon.de/dp/B0GQZPYC6F', '_blank')}
+                  className="w-full bg-gradient-to-r from-amber-400 to-yellow-500 text-green-900 px-8 py-4 rounded-lg font-semibold text-lg transition-all duration-300 hover:from-amber-500 hover:to-yellow-600 hover:shadow-lg hover:shadow-amber-500/25 transform hover:scale-105 mb-4"
+                >
                   <ShoppingCart className="inline-block mr-2 w-5 h-5" />
                   Order Now
                 </button>
-                
+
                 <p className="text-sm text-gray-400">
                   30-day money-back guarantee
                 </p>

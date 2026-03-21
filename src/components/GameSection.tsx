@@ -1,25 +1,21 @@
 import React from 'react';
-import { Star, Users, Clock, Award } from 'lucide-react';
+import { Star, Users, Clock } from 'lucide-react';
 
 const GameSection: React.FC = () => {
   const handleBuyNowClick = () => {
-    // Scroll to the BuyNow section
-    const buyNowSection = document.querySelector('#buy-now-section');
-    if (buyNowSection) {
-      buyNowSection.scrollIntoView({ behavior: 'smooth' });
-    }
+    window.open('https://www.amazon.de/dp/B0GQZPYC6F', '_blank');
   };
 
   return (
     <section className="py-20 bg-gradient-to-b from-green-800 via-gray-900 to-gray-800 relative overflow-hidden">
       {/* Parchment Background */}
-      <div 
+      <div
         className="absolute inset-0 opacity-5"
         style={{
           backgroundImage: `url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><defs><pattern id="vintage" patternUnits="userSpaceOnUse" width="40" height="40"><rect width="40" height="40" fill="%23d4af37"/><circle cx="10" cy="10" r="1" fill="%23b8941f" opacity="0.3"/><circle cx="30" cy="25" r="0.8" fill="%23b8941f" opacity="0.2"/></pattern></defs><rect width="100" height="100" fill="url(%23vintage)"/></svg>')`,
         }}
       />
-      
+
       <div className="container mx-auto px-4 relative z-10">
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 items-center max-w-6xl mx-auto">
           {/* Game Image - Left Side */}
@@ -103,14 +99,14 @@ const GameSection: React.FC = () => {
                     Save €20
                   </span>
                 </div>
-                
+
                 <button
                   onClick={handleBuyNowClick}
                   className="w-full bg-gradient-to-r from-amber-400 to-yellow-500 text-green-900 px-8 py-4 rounded-lg font-semibold text-lg transition-all duration-300 hover:from-amber-500 hover:to-yellow-600 hover:shadow-lg hover:shadow-amber-500/25 transform hover:scale-105"
                 >
                   Order Now
                 </button>
-                
+
                 <p className="text-sm text-gray-400 text-center mt-3">
                   Free worldwide shipping • 30-day money-back guarantee
                 </p>

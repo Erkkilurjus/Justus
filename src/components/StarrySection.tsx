@@ -78,7 +78,7 @@ const StarrySection: React.FC = () => {
   }, []);
 
   const handleBuyNowClick = () => {
-    window.scrollTo({ top: 0, behavior: 'smooth' });
+    window.open('https://www.amazon.de/dp/B0GQZPYC6F', '_blank');
   };
 
   const features = [
