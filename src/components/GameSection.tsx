@@ -3,7 +3,7 @@ import { Star, Users, Clock } from 'lucide-react';
 
 const GameSection: React.FC = () => {
   const handleBuyNowClick = () => {
-    window.open('https://www.amazon.de/dp/B0GQZPYC6F?language=en_GB', '_blank');
+    window.open('https://www.amazon.de/dp/B0GQZPYC6F', '_blank');
   };
 
   return (
