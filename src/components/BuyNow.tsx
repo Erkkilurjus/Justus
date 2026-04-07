@@ -66,7 +66,7 @@ const BuyNow: React.FC = () => {
                 </div>
 
                 <button
-                  onClick={() => window.open('https://www.amazon.de/dp/B0GQZPYC6F', '_blank')}
+                  onClick={() => window.open('https://www.amazon.de/dp/B0GQZPYC6F?language=en_GB', '_blank')}
                   className="w-full bg-gradient-to-r from-amber-400 to-yellow-500 text-green-900 px-8 py-4 rounded-lg font-semibold text-lg transition-all duration-300 hover:from-amber-500 hover:to-yellow-600 hover:shadow-lg hover:shadow-amber-500/25 transform hover:scale-105 mb-4"
                 >
                   <ShoppingCart className="inline-block mr-2 w-5 h-5" />
